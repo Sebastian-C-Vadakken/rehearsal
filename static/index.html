@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rehearsal</title>
+  <meta name="description" content="Practise high-stakes conversations against an AI opponent with a hidden hand. Powered by NVIDIA Nemotron on Nebius Token Factory.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect x=%226%22 y=%222%22 width=%2220%22 height=%2228%22 rx=%224%22 fill=%22%23f2b84b%22 transform=%22rotate(-6 16 16)%22/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="brand" id="home" type="button" aria-label="Back to scenarios">
+      <span class="brand-mark" aria-hidden="true">R</span>
+      <span class="brand-name">Rehearsal</span>
+    </button>
+    <div class="powered" id="powered"></div>
+  </header>
+
+  <!-- Screen 1: pick a scenario -->
+  <main id="pick" class="screen">
+    <section class="hero">
+      <h1>Lose the negotiation here,<br><em>not in real life.</em></h1>
+      <p>Spar with an AI opponent that holds a hidden hand. A live coach reads every move you make. When it's over, the cards flip and you see exactly what you left on the table.</p>
+    </section>
+
+    <div class="difficulty" role="radiogroup" aria-label="Difficulty">
+      <span class="label">Opponent</span>
+      <button type="button" role="radio" data-diff="friendly">Friendly</button>
+      <button type="button" role="radio" data-diff="tough" class="active" aria-checked="true">Tough</button>
+      <button type="button" role="radio" data-diff="hardball">Hardball</button>
+    </div>
+
+    <section class="cards" id="cards" aria-label="Scenarios"></section>
+
+    <section class="custom card-surface">
+      <div>
+        <h2>Rehearse your real situation</h2>
+        <p>Paste the offer email or describe what's happening. Nemotron Ultra builds the other side's hidden hand from it.</p>
+      </div>
+      <textarea id="situation" rows="3" maxlength="2000" placeholder="e.g. A startup offered me $95k for a product designer role and wants an answer by Monday. I have 3 years of experience."></textarea>
+      <button type="button" class="btn primary" id="custom-start">Build my scenario</button>
+    </section>
+  </main>
+
+  <!-- Screen 2: sparring -->
+  <main id="spar" class="screen hidden">
+    <section class="arena">
+      <div class="table-head">
+        <div class="hand" id="hand" aria-label="Their hidden hand">
+          <div class="hand-inner">
+            <div class="hand-back"><span>?</span></div>
+            <div class="hand-front" id="hand-front"></div>
+          </div>
+        </div>
+        <div class="who">
+          <div class="who-name" id="who-name"></div>
+          <div class="who-role" id="who-role"></div>
+        </div>
+        <div class="on-table" id="on-table"></div>
+      </div>
+
+      <section id="reveal" class="reveal hidden" aria-live="polite"></section>
+
+      <div class="chat" id="chat" aria-live="polite"></div>
+
+      <form class="composer" id="composer">
+        <textarea id="input" rows="2" maxlength="1000" placeholder="Say something..." aria-label="Your message"></textarea>
+        <div class="composer-actions">
+          <div class="quick" id="quick"></div>
+          <button type="submit" class="btn primary" id="send">Send</button>
+        </div>
+      </form>
+      <p class="disclaimer">Practice only. Don't type real personal or financial details.</p>
+    </section>
+
+    <aside class="side">
+      <section class="panel coach">
+        <h3>Live coach <span class="tier nano">Nano</span></h3>
+        <div id="meters" class="meters"></div>
+        <div class="tip" id="tip">Make your first move. The coach scores every message you send.</div>
+        <div class="leverage" id="leverage"></div>
+      </section>
+
+      <section class="panel router">
+        <h3>Model router</h3>
+        <div class="router-summary" id="router-summary"></div>
+        <ol class="calls" id="calls"></ol>
+      </section>
+    </aside>
+  </main>
+
+  <div class="toast hidden" id="toast" role="alert"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

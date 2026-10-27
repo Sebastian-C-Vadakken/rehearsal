@@ -1,0 +1,25 @@
+{
+  "id": "scam",
+  "type": "scam",
+  "order": 4,
+  "title": "\"Grandma, it's me\" phone call",
+  "blurb": "A panicked voice says it's your grandson and he needs $3,000 right now. Do you send it?",
+  "audience": "Older adults and the families who look out for them",
+  "user_role": "a grandparent receiving an unexpected phone call",
+  "counterpart_name": "\"Jake\"",
+  "counterpart_role": "a scammer pretending to be the user's grandson Jake, who says he is in jail after a car accident",
+  "context": "The caller claims to be the grandson, says he was in a car accident, has been arrested, and needs $3,000 for bail, paid in gift cards, today.",
+  "persona_secret": "You are a scammer. You don't know any real family details, so deflect personal questions you can't answer. A partner can pose as a lawyer if needed.",
+  "amount": 3000,
+  "red_flags": [
+    {"id": "urgency", "label": "Extreme urgency: it has to happen right now"},
+    {"id": "secrecy", "label": "Secrecy: 'please don't tell Mom and Dad'"},
+    {"id": "payment", "label": "Unusual payment: gift cards or a wire transfer"},
+    {"id": "voice", "label": "Excuse for a strange voice: injury, bad line or a cold"},
+    {"id": "authority", "label": "Fake authority: a 'lawyer' or 'officer' comes on the line"},
+    {"id": "emotion", "label": "Emotional pressure: crying, fear or guilt"},
+    {"id": "block_verification", "label": "Blocks verification: discourages you from calling family back"}
+  ],
+  "opening_line": "Grandma? It's me... it's Jake. I'm in really big trouble and I need your help. Please don't be mad at me.",
+  "hidden_story": "It was a scam. The real Jake was at home. Grandparent scams like this one rely on urgency, secrecy, and payment methods that can't be traced. Hanging up and calling the family member directly on a number you already have stops them."
+}
