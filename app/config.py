@@ -29,3 +29,7 @@ PRICES = {
 }
 
 MAX_SESSIONS = 500
+
+# POST /api/* requests allowed per visitor per 10 minutes, and across everyone per hour.
+RATE_PER_IP = int(os.getenv("RATE_PER_IP", "60"))
+RATE_GLOBAL = int(os.getenv("RATE_GLOBAL", "1500"))

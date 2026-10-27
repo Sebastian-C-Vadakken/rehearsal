@@ -1,10 +1,12 @@
 import json
 import logging
+import time
+from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -24,6 +26,29 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Rehearsal", lifespan=lifespan)
+
+# The public demo spends real credits, so cap model-backed requests per visitor and overall.
+_hits: dict[str, deque] = defaultdict(deque)
+_all_hits: deque = deque()
+
+
+def _over(q: deque, limit: int, window: float, now: float) -> bool:
+    while q and now - q[0] > window:
+        q.popleft()
+    if len(q) >= limit:
+        return True
+    q.append(now)
+    return False
+
+
+@app.middleware("http")
+async def rate_limit(request: Request, call_next):
+    if request.method == "POST" and request.url.path.startswith("/api/"):
+        ip = (request.headers.get("x-forwarded-for") or (request.client.host if request.client else "?")).split(",")[0].strip()
+        now = time.monotonic()
+        if _over(_hits[ip], config.RATE_PER_IP, 600, now) or _over(_all_hits, config.RATE_GLOBAL, 3600, now):
+            return JSONResponse({"detail": "The demo is busy. Please wait a few minutes and try again."}, status_code=429)
+    return await call_next(request)
 
 
 class NewSession(BaseModel):
