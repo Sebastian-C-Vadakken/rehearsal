@@ -18,7 +18,7 @@ Last updated: Wed Oct 28, 2026, evening. **The deadline is Thu Oct 29 at night.*
 
 **Not done**
 - Rotate the Nebius API key. Part of the old one was exposed on Oct 28. Use the new key on Render.
-- Create the Render web service, add `NEBIUS_API_KEY`, deploy, and test the public URL
+- ✅ Deployed on Render: https://rehearsal-syz0.onrender.com (tested end to end on Oct 28)
 - The README TODOs: demo URL, video link, and the feedback section
 - The video, then the submission
 

@@ -8,7 +8,7 @@ Rehearsal lets you practise high-stakes conversations against an AI opponent tha
 
 Built for the **Best Apps and Agents** track. Powered by **NVIDIA Nemotron** models on **Nebius Token Factory**.
 
-> **Live demo:** _TODO: Render URL_. Click **"Judge demo: salary offer"** for a guided round of about 2 minutes. · **Video:** _TODO: YouTube link_
+> **Live demo:** https://rehearsal-syz0.onrender.com. Click **"Judge demo: salary offer"** for a guided round of about 2 minutes. · **Video:** _TODO: YouTube link_
 
 ## Why
 
