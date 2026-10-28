@@ -167,6 +167,10 @@ I built Rehearsal in three days on Token Factory. These are my honest notes from
 - **No Nebius CLI for Windows.** It supports only Ubuntu and macOS, so on Windows I could only use the web console. A Windows build would help.
 - **Finding the base URL.** I found `api.tokenfactory.nebius.com/v1` faster through third-party integration guides than through the official docs. Putting it on the quickstart's first screen would help.
 
+### Would I build with it again?
+
+Definitely. I'd love to build another project with Nemotron. I learned so much from this one.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
