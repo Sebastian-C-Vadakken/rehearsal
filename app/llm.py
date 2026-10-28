@@ -3,6 +3,7 @@
 import json
 import re
 import time
+from datetime import datetime, timezone
 
 from openai import AsyncOpenAI
 
@@ -16,6 +17,29 @@ _EXCLUDE = ("vl", "embed", "rerank", "reward", "guard", "safety", "parse", "retr
 
 class LLMError(RuntimeError):
     pass
+
+
+BUDGET_MESSAGE = ("Today's demo budget has been reached, so Rehearsal is resting until 00:00 UTC. "
+                  "Thanks for trying it! The demo video shows a full round.")
+
+
+class BudgetExceeded(LLMError):
+    pass
+
+
+# Estimated spend for the current UTC day (in memory; resets if the app restarts).
+_spend = {"day": "", "usd": 0.0}
+
+
+def spent_today() -> float:
+    today = datetime.now(timezone.utc).date().isoformat()
+    if _spend["day"] != today:
+        _spend.update(day=today, usd=0.0)
+    return _spend["usd"]
+
+
+def budget_left() -> bool:
+    return spent_today() < config.DAILY_BUDGET_USD
 
 
 def client() -> AsyncOpenAI:
@@ -87,9 +111,12 @@ async def chat_json(tier: str, purpose: str, messages: list[dict], log: list, *,
     """
     model = config.MODELS[tier]
     msgs = list(messages)
+    max_tokens = min(max_tokens, config.MAX_TOKENS.get(purpose, max_tokens))
     extra = {} if thinking else {"extra_body": {"chat_template_kwargs": {"enable_thinking": False}}}
     last_err = ""
     for _ in range(2):
+        if not budget_left():
+            raise BudgetExceeded(BUDGET_MESSAGE)
         t0 = time.perf_counter()
         if config.MOCK:
             text = await mock.respond(purpose, msgs)
@@ -110,6 +137,8 @@ async def chat_json(tier: str, purpose: str, messages: list[dict], log: list, *,
             "ms": round((time.perf_counter() - t0) * 1000), "prompt_tokens": pt, "completion_tokens": ct,
             "cost": cost(tier, pt, ct), "ultra_cost": cost("ultra", pt, ct),
         })
+        spent_today()  # roll the day over before adding
+        _spend["usd"] += log[-1]["cost"]
         try:
             data = parse_json(text)
             if validate:

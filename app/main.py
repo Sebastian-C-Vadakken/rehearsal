@@ -68,18 +68,33 @@ class SessionRef(BaseModel):
     turn: int | None = None
 
 
+FRIENDLY_LLM_ERROR = "The AI opponent hit a hiccup. Please try that again."
+
+
+def _public_error(e: Exception) -> tuple[int, str, str]:
+    """(status, message, code) safe to show visitors; model/API details only go to the server log."""
+    if isinstance(e, llm.BudgetExceeded):
+        return 503, str(e), "budget"
+    if isinstance(e, EngineError):
+        return 400, str(e), "engine"
+    log.warning("model error: %s", e)
+    return 502, FRIENDLY_LLM_ERROR, "llm"
+
+
 def _bad(e: Exception):
-    raise HTTPException(status_code=400 if isinstance(e, EngineError) else 502, detail=str(e))
+    status, message, code = _public_error(e)
+    raise HTTPException(status_code=status, detail=message, headers={"X-Error-Code": code})
 
 
 @app.get("/api/health")
 async def health():
-    return {"ok": True, "mock": config.MOCK, "models": config.MODELS}
+    return {"ok": True, "mock": config.MOCK, "models": config.MODELS, "budget_reached": not llm.budget_left()}
 
 
 @app.get("/api/scenarios")
 async def scenarios():
-    return {"scenarios": [public_scenario(s) for s in SCENARIOS.values()], "models": config.MODELS, "mock": config.MOCK}
+    return {"scenarios": [public_scenario(s) for s in SCENARIOS.values()], "models": config.MODELS,
+            "mock": config.MOCK, "budget_reached": not llm.budget_left(), "budget_message": llm.BUDGET_MESSAGE}
 
 
 @app.post("/api/session")
@@ -111,7 +126,8 @@ async def turn(body: Turn):
             async for ev in session.turn(body.text, body.action):
                 yield json.dumps(ev) + "\n"
         except (EngineError, llm.LLMError) as e:
-            yield json.dumps({"type": "error", "message": str(e), "rolled_back": True}) + "\n"
+            _, message, code = _public_error(e)
+            yield json.dumps({"type": "error", "message": message, "code": code, "rolled_back": True}) + "\n"
         yield json.dumps({"type": "calls", "calls": session.calls}) + "\n"
 
     return StreamingResponse(events(), media_type="application/x-ndjson",

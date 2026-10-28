@@ -148,6 +148,11 @@ class Session:
         text = (text or "").strip()[:1000]
         if not text and action not in ACTION_TEXT:
             raise EngineError("Say something first.")
+        if text and self.state["turn"] >= config.MAX_TURNS:
+            end = "hang up" if self.s["type"] == "scam" else "accept or walk away"
+            raise EngineError(f"That's the turn limit for one round. You can {end}, or replay from an earlier turn.")
+        if len(self.calls) >= config.MAX_SESSION_CALLS:
+            raise EngineError("This session has used its share of the demo. Start a new scenario to keep practising.")
         self.snapshots.append(copy.deepcopy((self.messages, self.coach, self.state)))
         self.state["turn"] += 1
         n = self.state["turn"]

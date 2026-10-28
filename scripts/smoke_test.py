@@ -15,6 +15,7 @@ if "--live" not in sys.argv:
 
 from fastapi.testclient import TestClient  # noqa: E402
 
+from app import config, llm  # noqa: E402
 from app.main import app  # noqa: E402
 
 failures = 0
@@ -95,6 +96,23 @@ with TestClient(app) as c:
     s = c.post("/api/session", json={"scenario_id": "custom", "difficulty": "tough",
                                      "situation": "I'm a freelance designer and a startup offered $2,000 for a logo package."}).json()
     check(s.get("scenario", {}).get("type") == "money" and len(s["calls"]) >= 1, "custom hand generated")
+
+    print("budget guard")
+    saved = config.DAILY_BUDGET_USD, config.MAX_TURNS
+    config.DAILY_BUDGET_USD = llm.spent_today()  # pretend today's budget is used up
+    sid = c.post("/api/session", json={"scenario_id": "salary", "difficulty": "tough"}).json()["session_id"]
+    ev = turn(c, sid, "I need $80,000.")
+    check(ev.get("error", {}).get("code") == "budget", "daily ceiling returns a friendly budget message")
+    check(c.get("/api/health").json()["budget_reached"], "health reports the budget is reached")
+    config.DAILY_BUDGET_USD = saved[0]
+    config.MAX_TURNS = 1
+    sid = c.post("/api/session", json={"scenario_id": "salary", "difficulty": "tough"}).json()["session_id"]
+    turn(c, sid, "I need $80,000 based on market data.")
+    ev = turn(c, sid, "Can you do better?")
+    check("turn limit" in ev.get("error", {}).get("message", ""), "per-round turn cap enforced")
+    ev = turn(c, sid, action="accept")
+    check("closed" in ev, "accepting still works at the turn cap")
+    config.MAX_TURNS = saved[1]
 
 print("\nFAILED" if failures else "\nALL PASSED", f"({failures} failures)")
 sys.exit(1 if failures else 0)

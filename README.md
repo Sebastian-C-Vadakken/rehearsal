@@ -6,7 +6,7 @@ Rehearsal lets you practise high-stakes conversations against an AI opponent tha
 
 Built for the **Best Apps and Agents** track. Powered by **NVIDIA Nemotron** models on **Nebius Token Factory**.
 
-> Demo: _TODO: hosted URL_ · Video: _TODO: YouTube link_
+> **Live demo:** _TODO: Hugging Face Space URL_. Click **"Judge demo: salary offer"** for a guided round of about 2 minutes. · **Video:** _TODO: YouTube link_
 
 ## Why
 
@@ -74,7 +74,22 @@ Each scenario has three difficulty levels: Friendly, Tough and Hardball.
 
 All calls go through Token Factory's OpenAI-compatible API. The **model router panel** in the app shows every call live: tier, latency, tokens, and the estimated cost compared with running everything on Ultra.
 
-Nebius services used: **Token Factory** (inference) and **Serverless Endpoints** (hosting, _TODO: confirm_).
+Nebius services used: **Token Factory** for all inference, called directly with our own API key. The public demo is hosted on a Hugging Face Docker Space, which only serves the web app and uses no Hugging Face inference.
+
+### Budget guard (public demo)
+
+The demo spends real Token Factory credits, so the app limits what any visitor can use:
+
+| Guard | Default | Setting |
+|---|---|---|
+| Daily spend ceiling (estimated from real token usage × list prices). After that, visitors see a friendly "demo budget reached" banner. | $3.00 per UTC day | `DAILY_BUDGET_USD` |
+| Requests per visitor | 60 per 10 min | `RATE_PER_IP` |
+| Requests overall | 1,500 per hour | `RATE_GLOBAL` |
+| Turns per round (accept, walk away and hang up always work) | 14 | `MAX_TURNS` |
+| Model calls per session, including replays | 80 | `MAX_SESSION_CALLS` |
+| Output tokens per call | coach 400 · opponent 1,000 · debrief 2,500 · custom scenario 1,500 | `app/config.py` |
+
+Visitors only ever see friendly messages. Raw model and API errors go to the server log only.
 
 ## Run it locally
 
@@ -95,14 +110,20 @@ Open http://localhost:8000.
 - **No API key?** Set `MOCK_LLM=1` to run the full UI on canned responses.
 - **Tests:** `python scripts/smoke_test.py` runs every scenario end to end in mock mode. Add `--live` to run it against Token Factory.
 
-### Docker / Nebius Serverless Endpoint
+### Docker
 
 ```bash
 docker build -t rehearsal .
 docker run -p 8000:8000 --env-file .env rehearsal
 ```
 
-The same image can be deployed as a Nebius Serverless Endpoint (container port `8000`). Pass `NEBIUS_API_KEY` and, optionally, the model IDs as environment variables.
+### Deploy to a Hugging Face Space
+
+1. Create a **Docker** Space and add a **secret** named `NEBIUS_API_KEY` in its settings.
+2. Run `hf auth login` once (from `pip install huggingface_hub`).
+3. Run `python scripts/deploy_space.py <user>/<space> --dry-run` to see exactly which files will be uploaded, then run it again without `--dry-run`.
+
+The script uploads only an allowlist of app files, plus `space/README.md`, which sets `sdk: docker` and `app_port: 8000`. It refuses to upload anything that looks like a `.env` file.
 
 ## Project layout
 
@@ -113,7 +134,8 @@ app/llm.py         Token Factory client, model auto-detection, JSON parsing, cal
 app/main.py        FastAPI routes (the turn endpoint streams NDJSON: coach → reply → reveal)
 scenarios/*.json   preset hidden hands
 static/            single-page UI (vanilla JS, no build step)
-scripts/           smoke test, model listing
+scripts/           smoke test, model listing, Hugging Face Space deploy
+space/README.md    Hugging Face Space config (sdk: docker, app_port: 8000)
 ```
 
 ## Feedback on Nebius Token Factory and NVIDIA Nemotron

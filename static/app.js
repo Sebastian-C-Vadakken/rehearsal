@@ -4,7 +4,7 @@ const $ = (sel, el = document) => el.querySelector(sel);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmt = (n) => "$" + Math.round(n).toLocaleString("en-US");
 
-const S = { scenarios: [], difficulty: "tough", view: null, busy: false, prevCoach: null, debrief: null };
+const S = { scenarios: [], difficulty: "tough", view: null, busy: false, prevCoach: null, debrief: null, judge: false };
 
 const KIND = { money: "Negotiation", scam: "Scam defense" };
 const METERS = {
@@ -13,6 +13,13 @@ const METERS = {
 };
 const PURPOSE = { coach: "Coach scores your move", counterpart: "Opponent replies", debrief: "Full debrief", custom_scenario: "Builds hidden hand" };
 const ACTION_TEXT = { accept: "I accept your offer.", walk: "I'm going to walk away from this.", hangup: "(You hang up the phone.)" };
+const JUDGE_LINE = "Thanks Dana, I'm really excited! Is there any flexibility? Maybe somewhere around $74,000 to $78,000?";
+const JUDGE_TIP = `<b>Judge demo</b> · Dana can secretly go much higher than $72,000. About 2 minutes:
+  <ol>
+    <li>Press <b>Send</b> on the suggested line. It asks for a range, a classic mistake. Watch the Nano coach score it.</li>
+    <li>Click <b>Accept</b> on Dana's counter. The cards flip and show what you left on the table.</li>
+    <li>Click <b>Replay from the turning point</b>, send the better line from the debrief, and compare.</li>
+  </ol>`;
 const OUTCOME = {
   deal: (r) => `You settled at ${fmt(r.result)}.`,
   final_stood: (r) => `Their final offer of ${fmt(r.result)} stood.`,
@@ -26,8 +33,21 @@ async function api(path, body) {
   const opts = body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {};
   const res = await fetch(path, opts);
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.detail || `Request failed (${res.status})`);
+  if (!res.ok) {
+    checkBudget(res, data);
+    throw new Error(data.detail || `Request failed (${res.status})`);
+  }
   return data;
+}
+
+function checkBudget(res, data) {
+  if (res.status === 503 && res.headers.get("X-Error-Code") === "budget") showBanner(data.detail);
+}
+
+function showBanner(msg) {
+  const b = $("#banner");
+  b.textContent = msg;
+  b.classList.remove("hidden");
 }
 
 let toastTimer;
@@ -47,7 +67,7 @@ function show(screen) {
 
 function setBusy(busy) {
   S.busy = busy;
-  document.querySelectorAll("#send, #quick button, .scenario, #custom-start").forEach((b) => (b.disabled = busy));
+  document.querySelectorAll("#send, #quick button, .scenario, #custom-start, #judge-demo").forEach((b) => (b.disabled = busy));
 }
 
 // ---------- pick screen ----------
@@ -58,6 +78,7 @@ async function init() {
     S.scenarios = data.scenarios;
     renderPowered(data.models, data.mock);
     renderCards();
+    if (data.budget_reached) showBanner(data.budget_message);
   } catch (e) {
     toast(e.message);
   }
@@ -82,8 +103,9 @@ function renderCards() {
     </button>`).join("");
 }
 
-async function start(id, situation) {
+async function start(id, situation, judge = false) {
   if (S.busy) return;
+  S.judge = judge;
   setBusy(true);
   const customBtn = $("#custom-start");
   if (id === "custom") customBtn.textContent = "Ultra is building their hidden hand...";
@@ -91,6 +113,7 @@ async function start(id, situation) {
     const view = await api("/api/session", { scenario_id: id, difficulty: S.difficulty, situation });
     loadView(view);
     show("spar");
+    if (judge) $("#input").value = JUDGE_LINE;
     $("#input").focus();
   } catch (e) {
     toast(e.message);
@@ -106,6 +129,8 @@ function loadView(view) {
   S.view = view;
   S.debrief = null;
   const sc = view.scenario;
+  $("#judge-tip").classList.toggle("hidden", !S.judge);
+  if (S.judge) $("#judge-tip").innerHTML = JUDGE_TIP;
   $("#who-name").textContent = sc.counterpart_name;
   $("#who-role").textContent = `${sc.counterpart_role} · ${view.difficulty}`;
   $("#hand").classList.remove("flipped");
@@ -255,6 +280,7 @@ async function sendTurn(text, action) {
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
+      checkBudget(res, data);
       throw new Error(data.detail || `Request failed (${res.status})`);
     }
     const reader = res.body.getReader();
@@ -312,6 +338,7 @@ function handleEvent(ev) {
       renderCalls(ev.calls);
       break;
     case "error":
+      if (ev.code === "budget") showBanner(ev.message);
       toast(ev.message);
       return "error";
   }
@@ -453,5 +480,13 @@ $("#spar").addEventListener("click", (e) => {
   if (e.target.closest("#new-scenario")) show("pick");
 });
 $("#home").addEventListener("click", () => show("pick"));
+$("#judge-demo").addEventListener("click", () => {
+  S.difficulty = "tough";
+  document.querySelectorAll(".difficulty button").forEach((x) => {
+    x.classList.toggle("active", x.dataset.diff === "tough");
+    x.setAttribute("aria-checked", String(x.dataset.diff === "tough"));
+  });
+  start("salary", undefined, true);
+});
 
 init();

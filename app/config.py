@@ -21,15 +21,23 @@ def _price(name: str, default: float) -> float:
         return default
 
 
-# USD per 1M tokens: (input, output)
+# USD per 1M tokens: (input, output). Defaults are Token Factory list prices for the Nemotron 3 models.
 PRICES = {
     "nano": (_price("NANO_PRICE_IN", 0.06), _price("NANO_PRICE_OUT", 0.24)),
-    "super": (_price("SUPER_PRICE_IN", 0.10), _price("SUPER_PRICE_OUT", 0.40)),
-    "ultra": (_price("ULTRA_PRICE_IN", 0.60), _price("ULTRA_PRICE_OUT", 1.80)),
+    "super": (_price("SUPER_PRICE_IN", 0.30), _price("SUPER_PRICE_OUT", 0.90)),
+    "ultra": (_price("ULTRA_PRICE_IN", 1.00), _price("ULTRA_PRICE_OUT", 3.00)),
 }
 
 MAX_SESSIONS = 500
 
+# ---- Budget guard for the public demo ----
 # POST /api/* requests allowed per visitor per 10 minutes, and across everyone per hour.
 RATE_PER_IP = int(os.getenv("RATE_PER_IP", "60"))
 RATE_GLOBAL = int(os.getenv("RATE_GLOBAL", "1500"))
+# Estimated model spend allowed per UTC day; after that the demo shows "demo budget reached".
+DAILY_BUDGET_USD = _price("DAILY_BUDGET_USD", 3.00)
+# User turns per round (accept / walk away / hang up always stay allowed), and model calls per session incl. replays.
+MAX_TURNS = int(os.getenv("MAX_TURNS", "14"))
+MAX_SESSION_CALLS = int(os.getenv("MAX_SESSION_CALLS", "80"))
+# Output token ceilings per call type.
+MAX_TOKENS = {"coach": 400, "counterpart": 1000, "debrief": 2500, "custom_scenario": 1500}

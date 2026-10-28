@@ -19,12 +19,17 @@
     </button>
     <div class="powered" id="powered"></div>
   </header>
+  <div class="banner hidden" id="banner" role="status"></div>
 
   <!-- Screen 1: pick a scenario -->
   <main id="pick" class="screen">
     <section class="hero">
       <h1>Lose the negotiation here,<br><em>not in real life.</em></h1>
       <p>Spar with an AI opponent that holds a hidden hand. A live coach reads every move you make. When it's over, the cards flip and you see exactly what you left on the table.</p>
+      <div class="judge">
+        <button type="button" class="btn primary judge-btn" id="judge-demo">Judge demo: salary offer</button>
+        <span>One click, about 2 minutes. Starts the salary scenario with a suggested first move.</span>
+      </div>
     </section>
 
     <div class="difficulty" role="radiogroup" aria-label="Difficulty">
@@ -62,6 +67,8 @@
         </div>
         <div class="on-table" id="on-table"></div>
       </div>
+
+      <div class="judge-tip hidden" id="judge-tip"></div>
 
       <section id="reveal" class="reveal hidden" aria-live="polite"></section>
 
