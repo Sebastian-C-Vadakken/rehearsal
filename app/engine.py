@@ -267,7 +267,7 @@ class Session:
                 data["anchoring"] = min(data["anchoring"], 2)
             data["tip"] = str(data.get("tip") or "")[:160]
 
-        return await llm.chat_json("nano", "coach", [
+        return await llm.chat_json_hedged("nano", "super", "coach", [
             {"role": "system", "content": prompts.COACH_MONEY_SYSTEM.format(value_label=self.s["value_label"])},
             {"role": "user", "content": prompts.coach_money_user(cur, self._their_last_line(), text)},
         ], self.calls, max_tokens=400, temperature=0.2, validate=validate, thinking=False)
@@ -290,7 +290,7 @@ class Session:
             data["called_out"] = [c for c in called if isinstance(c, str) and c in flags]
             data["tip"] = str(data.get("tip") or "")[:160]
 
-        coach = await llm.chat_json("nano", "coach", [
+        coach = await llm.chat_json_hedged("nano", "super", "coach", [
             {"role": "system", "content": prompts.coach_scam_system(s["red_flags"])},
             {"role": "user", "content": prompts.coach_scam_user(self._their_last_line(), text)},
         ], self.calls, max_tokens=400, temperature=0.2, validate=validate, thinking=False)

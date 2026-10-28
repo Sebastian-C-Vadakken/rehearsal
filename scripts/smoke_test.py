@@ -4,6 +4,7 @@
     python scripts/smoke_test.py --live   # real Token Factory calls (needs NEBIUS_API_KEY)
 """
 
+import asyncio
 import json
 import os
 import sys
@@ -114,6 +115,24 @@ with TestClient(app) as c:
     ev = turn(c, sid, action="accept")
     check("closed" in ev, "accepting still works at the turn cap")
     config.MAX_TURNS = saved[1]
+
+    if config.MOCK:
+        print("hedged coach")
+        real_respond, seen = llm.mock.respond, []
+
+        async def slow_first_coach(purpose, msgs):  # the first coach call (Nano) stalls
+            seen.append(purpose)
+            if purpose == "coach" and seen.count("coach") == 1:
+                await asyncio.sleep(3)
+            return await real_respond(purpose, msgs)
+
+        llm.mock.respond, saved_hedge, config.COACH_HEDGE_SECONDS = slow_first_coach, config.COACH_HEDGE_SECONDS, 0.2
+        sid = c.post("/api/session", json={"scenario_id": "salary", "difficulty": "tough"}).json()["session_id"]
+        ev = turn(c, sid, "I need $80,000 based on market data.")
+        coach_calls = [x for x in ev.get("calls", {}).get("calls", []) if x["purpose"] == "coach"]
+        check("coach" in ev and [x["tier"] for x in coach_calls] == ["super"] and coach_calls[0]["note"] == "backup",
+              "slow Nano falls back to Super for the coach")
+        llm.mock.respond, config.COACH_HEDGE_SECONDS = real_respond, saved_hedge
 
 print("\nFAILED" if failures else "\nALL PASSED", f"({failures} failures)")
 sys.exit(1 if failures else 0)

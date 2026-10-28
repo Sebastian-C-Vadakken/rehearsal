@@ -1,5 +1,6 @@
 """Token Factory client: model routing, JSON parsing, per-call logging."""
 
+import asyncio
 import json
 import re
 import time
@@ -102,9 +103,30 @@ def cost(tier: str, prompt_tokens: int, completion_tokens: int) -> float:
     return (prompt_tokens * p_in + completion_tokens * p_out) / 1_000_000
 
 
+async def chat_json_hedged(primary: str, backup: str, purpose: str, messages: list[dict], log: list,
+                           **kwargs) -> dict:
+    """Run on `primary`; if it hasn't answered within COACH_HEDGE_SECONDS, also ask `backup`
+    and use whichever valid answer arrives first. Keeps the live coach fast when one model queues."""
+    first = asyncio.create_task(chat_json(primary, purpose, messages, log, **kwargs))
+    done, _ = await asyncio.wait({first}, timeout=config.COACH_HEDGE_SECONDS)
+    if done:
+        return first.result()
+    pending = {first, asyncio.create_task(chat_json(backup, purpose, messages, log, note="backup", **kwargs))}
+    error: BaseException | None = None
+    while pending:
+        done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
+        for task in done:
+            if task.exception() is None:
+                for p in pending:
+                    p.cancel()
+                return task.result()
+            error = task.exception()
+    raise error
+
+
 async def chat_json(tier: str, purpose: str, messages: list[dict], log: list, *,
                     max_tokens: int = 1200, temperature: float = 0.6, validate=None,
-                    thinking: bool = True) -> dict:
+                    thinking: bool = True, note: str | None = None) -> dict:
     """Call a model tier, parse a JSON object reply, retry once with the error if invalid.
 
     thinking=False turns off Nemotron 3 reasoning: ~2x faster for simple scoring calls.
@@ -135,7 +157,7 @@ async def chat_json(tier: str, purpose: str, messages: list[dict], log: list, *,
         log.append({
             "tier": tier, "model": model, "purpose": purpose,
             "ms": round((time.perf_counter() - t0) * 1000), "prompt_tokens": pt, "completion_tokens": ct,
-            "cost": cost(tier, pt, ct), "ultra_cost": cost("ultra", pt, ct),
+            "cost": cost(tier, pt, ct), "ultra_cost": cost("ultra", pt, ct), "note": note,
         })
         spent_today()  # roll the day over before adding
         _spend["usd"] += log[-1]["cost"]

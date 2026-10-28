@@ -45,7 +45,7 @@ def engine_note_money(current: float, low: float, high: float, directive: str) -
 
 DIRECTIVES = {
     "counter": "Concede only if the user gave a good reason; you don't have to use the full range. If you change your offer, say the exact amount.",
-    "accept_ask": "The user asked for {x}. Agree to {x} and close the deal. Set offer to exactly that.",
+    "accept_ask": "The user asked for {x} and you accept it. Say yes to {x} clearly and confirm the deal is done. Don't add new conditions or deadlines. Set offer to exactly that.",
     "final": "Make this your FINAL offer: exactly {x}. Say clearly that it is final.",
     "emergency": "The user is about to walk away. Make one last, final offer of exactly {x} to keep them.",
     "hold": "You will not go any higher. Hold firm at {x} and say this is final.",

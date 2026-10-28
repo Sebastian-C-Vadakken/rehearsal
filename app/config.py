@@ -40,5 +40,7 @@ DAILY_BUDGET_USD = _price("DAILY_BUDGET_USD", 3.00)
 # User turns per round (accept / walk away / hang up always stay allowed), and model calls per session incl. replays.
 MAX_TURNS = int(os.getenv("MAX_TURNS", "14"))
 MAX_SESSION_CALLS = int(os.getenv("MAX_SESSION_CALLS", "80"))
+# If Nano hasn't scored a move within this many seconds, Super is asked too and the first answer wins.
+COACH_HEDGE_SECONDS = _price("COACH_HEDGE_SECONDS", 3.0)
 # Output token ceilings per call type.
 MAX_TOKENS = {"coach": 400, "counterpart": 1000, "debrief": 2500, "custom_scenario": 1500}

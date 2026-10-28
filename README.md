@@ -69,7 +69,7 @@ Each scenario has three difficulty levels: Friendly, Tough and Hardball.
 
 | Call | Model | Why this tier |
 |---|---|---|
-| Coach: scores each user message (structured JSON) | **Nemotron Nano** | Runs on every turn, so it needs to be fast and cheap. Its output feeds the deal engine. |
+| Coach: scores each user message (structured JSON) | **Nemotron Nano**, with **Super** as a backup | Runs on every turn, so it needs to be fast and cheap. Its output feeds the deal engine. If Nano hasn't answered within 3 s, the same request goes to Super and the first answer wins, so the coach stays responsive when a model is queueing. |
 | Opponent: in-character replies inside engine limits | **Nemotron Ultra** | Needs to stay in character, follow the hidden constraints, and use tactics well |
 | Debrief: annotates every turn with a better line | **Nemotron Ultra** | Long-context reasoning over the transcript and the hidden hand |
 | Custom scenario: builds a hidden hand from your real situation | **Nemotron Ultra** | Open-ended scenario design |

@@ -17,7 +17,7 @@ const JUDGE_LINE = "Thanks Dana, I'm really excited! Is there any flexibility? M
 const JUDGE_TIP = `<b>Judge demo</b> · Dana can secretly go much higher than $72,000. About 2 minutes:
   <ol>
     <li>Press <b>Send</b> on the suggested line. It asks for a range, a classic mistake. Watch the Nano coach score it.</li>
-    <li>Click <b>Accept</b> on Dana's counter. The cards flip and show what you left on the table.</li>
+    <li>If Dana grabs the low end of your range, the round ends right away, and that's the lesson. If she counters instead, click <b>Accept</b>. Either way the cards flip and show what you left on the table.</li>
     <li>Click <b>Replay from the turning point</b>, send the better line from the debrief, and compare.</li>
   </ol>`;
 const OUTCOME = {
@@ -256,7 +256,7 @@ function renderCalls(calls) {
     : "Every model call shows up here: which Nemotron tier ran it, how long it took, and what it cost.";
   $("#calls").innerHTML = calls.slice().reverse().map((c) => `
     <li><span class="tier ${esc(c.tier)}">${esc(c.tier)}</span>
-      <span class="purpose" title="${esc(c.model)}">${esc(PURPOSE[c.purpose] || c.purpose)}</span>
+      <span class="purpose" title="${esc(c.model)}">${esc(PURPOSE[c.purpose] || c.purpose)}${c.note === "backup" ? " (backup, Nano was slow)" : ""}</span>
       <span class="num">${c.ms}ms · ${c.prompt_tokens + c.completion_tokens} tok</span></li>`).join("");
 }
 
