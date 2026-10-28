@@ -50,6 +50,7 @@ button, textarea { font: inherit; color: inherit; }
 .hero h1 em { color: var(--accent); font-style: italic; }
 .hero p { color: var(--muted); max-width: 640px; font-size: 17px; margin: 0 0 28px; }
 
+.wake-note { margin: 0 0 4px; font-size: 13px; color: var(--muted); }
 .judge { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: -8px 0 30px; }
 .judge span { color: var(--muted); font-size: 14px; }
 .judge-btn { padding: 12px 22px; font-size: 16px; box-shadow: 0 6px 24px rgba(242, 184, 75, 0.25); }

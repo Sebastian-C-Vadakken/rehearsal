@@ -41,6 +41,7 @@ def turn(c, sid, text="", action=None):
 
 with TestClient(app) as c:
     print("models:", c.get("/api/health").json())
+    check(c.get("/health").json() == {"status": "ok"}, "/health liveness probe")
 
     print("salary: weak range ask, then accept")
     s = c.post("/api/session", json={"scenario_id": "salary", "difficulty": "tough"}).json()

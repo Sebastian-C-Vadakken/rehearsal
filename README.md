@@ -2,11 +2,13 @@
 
 **Lose the negotiation here, not in real life.**
 
+> **Free hosting: first load may take about 1 minute to wake up.**
+
 Rehearsal lets you practise high-stakes conversations against an AI opponent that holds a **hidden hand**. While you talk, a live coach scores every move you make. When the conversation ends, the cards flip: you see the other side's real limit, how much money you left on the table, and a turn-by-turn debrief. You can then **replay from the exact turn where you slipped**.
 
 Built for the **Best Apps and Agents** track. Powered by **NVIDIA Nemotron** models on **Nebius Token Factory**.
 
-> **Live demo:** _TODO: Hugging Face Space URL_. Click **"Judge demo: salary offer"** for a guided round of about 2 minutes. · **Video:** _TODO: YouTube link_
+> **Live demo:** _TODO: Render URL_. Click **"Judge demo: salary offer"** for a guided round of about 2 minutes. · **Video:** _TODO: YouTube link_
 
 ## Why
 
@@ -74,7 +76,7 @@ Each scenario has three difficulty levels: Friendly, Tough and Hardball.
 
 All calls go through Token Factory's OpenAI-compatible API. The **model router panel** in the app shows every call live: tier, latency, tokens, and the estimated cost compared with running everything on Ultra.
 
-Nebius services used: **Token Factory** for all inference, called directly with our own API key. The public demo is hosted on a Hugging Face Docker Space, which only serves the web app and uses no Hugging Face inference.
+Nebius services used: **Token Factory** for all inference, called directly with our own API key. The public demo runs on a free Render web service, which only serves the web app. Every model call goes straight to Token Factory.
 
 ### Budget guard (public demo)
 
@@ -84,7 +86,7 @@ The demo spends real Token Factory credits, so the app limits what any visitor c
 |---|---|---|
 | Daily spend ceiling (estimated from real token usage × list prices). After that, visitors see a friendly "demo budget reached" banner. | $3.00 per UTC day | `DAILY_BUDGET_USD` |
 | Requests per visitor | 60 per 10 min | `RATE_PER_IP` |
-| Requests overall | 1,500 per hour | `RATE_GLOBAL` |
+| Requests overall | 600 per hour | `RATE_GLOBAL` |
 | Turns per round (accept, walk away and hang up always work) | 14 | `MAX_TURNS` |
 | Model calls per session, including replays | 80 | `MAX_SESSION_CALLS` |
 | Output tokens per call | coach 400 · opponent 1,000 · debrief 2,500 · custom scenario 1,500 | `app/config.py` |
@@ -117,13 +119,13 @@ docker build -t rehearsal .
 docker run -p 8000:8000 --env-file .env rehearsal
 ```
 
-### Deploy to a Hugging Face Space
+### Deploy to Render (free)
 
-1. Create a **Docker** Space and add a **secret** named `NEBIUS_API_KEY` in its settings.
-2. Run `hf auth login` once (from `pip install huggingface_hub`).
-3. Run `python scripts/deploy_space.py <user>/<space> --dry-run` to see exactly which files will be uploaded, then run it again without `--dry-run`.
+1. On render.com, choose **New → Web Service** and connect this GitHub repo. Render detects the `Dockerfile`.
+2. Choose the **Free** instance type, add the environment variable `NEBIUS_API_KEY`, and set **Health Check Path** to `/health`.
+3. Deploy. The app listens on the `PORT` that Render provides.
 
-The script uploads only an allowlist of app files, plus `space/README.md`, which sets `sdk: docker` and `app_port: 8000`. It refuses to upload anything that looks like a `.env` file.
+Free instances sleep after about 15 minutes without traffic, and the first request then takes about a minute to wake the app.
 
 ## Project layout
 
@@ -134,8 +136,7 @@ app/llm.py         Token Factory client, model auto-detection, JSON parsing, cal
 app/main.py        FastAPI routes (the turn endpoint streams NDJSON: coach → reply → reveal)
 scenarios/*.json   preset hidden hands
 static/            single-page UI (vanilla JS, no build step)
-scripts/           smoke test, model listing, Hugging Face Space deploy
-space/README.md    Hugging Face Space config (sdk: docker, app_port: 8000)
+scripts/           smoke test, model listing
 ```
 
 ## Feedback on Nebius Token Factory and NVIDIA Nemotron

@@ -33,8 +33,9 @@ MAX_SESSIONS = 500
 # ---- Budget guard for the public demo ----
 # POST /api/* requests allowed per visitor per 10 minutes, and across everyone per hour.
 RATE_PER_IP = int(os.getenv("RATE_PER_IP", "60"))
-RATE_GLOBAL = int(os.getenv("RATE_GLOBAL", "1500"))
+RATE_GLOBAL = int(os.getenv("RATE_GLOBAL", "600"))
 # Estimated model spend allowed per UTC day; after that the demo shows "demo budget reached".
+# Kept in memory, so it resets when a free host restarts the app; RATE_GLOBAL bounds spend per hour regardless.
 DAILY_BUDGET_USD = _price("DAILY_BUDGET_USD", 3.00)
 # User turns per round (accept / walk away / hang up always stay allowed), and model calls per session incl. replays.
 MAX_TURNS = int(os.getenv("MAX_TURNS", "14"))

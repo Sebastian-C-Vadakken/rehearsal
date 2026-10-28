@@ -12,13 +12,13 @@ Last updated: Wed Oct 28, 2026, evening. **The deadline is Thu Oct 29 at night.*
 - Budget guard: a $3/day spend ceiling with a friendly banner, a rate limit per visitor and overall, a turn cap per round, a call cap per session, and output-token limits. Raw model errors are hidden from visitors.
 - The "Judge demo: salary offer" button runs a guided round of about 2 minutes.
 - The mock smoke test has 22 checks, all passing. Earlier live runs passed all 18 checks before the budget checks were added.
-- Hugging Face Space packaging: `space/README.md` (sdk: docker, app_port: 8000) and `scripts/deploy_space.py` (uploads an allowlist only and refuses `.env` files).
+- Ready for Render: the app listens on `$PORT`, `/health` responds for health checks, and a "Free hosting: first load may take about 1 minute to wake up" note is at the top of the README and the app.
 
-**Change of plan:** the Nebius Serverless deploy is skipped. The demo is hosted on a **Hugging Face Docker Space**, and the app still calls Nemotron **directly through Token Factory**. Don't use Hugging Face Inference Providers; the hackathon rules ban that. The old `docker.io/sebcv/rehearsal:v1` image is no longer needed.
+**Hosting:** a **Render free web service**, built from this repo's `Dockerfile`. The Nebius Serverless and Hugging Face plans are dropped. The app still calls Nemotron **directly through Token Factory** with our own key, and no other inference route is used. The old `docker.io/sebcv/rehearsal:v1` image is no longer needed.
 
 **Not done**
-- Rotate the Nebius API key. Part of the old one was exposed on Oct 28. Use the new key as the Space secret.
-- Create the Space, add the secret, deploy, and test the public URL
+- Rotate the Nebius API key. Part of the old one was exposed on Oct 28. Use the new key on Render.
+- Create the Render web service, add `NEBIUS_API_KEY`, deploy, and test the public URL
 - The README TODOs: demo URL, video link, and the feedback section
 - The video, then the submission
 
@@ -27,11 +27,11 @@ Last updated: Wed Oct 28, 2026, evening. **The deadline is Thu Oct 29 at night.*
 | Step | What | Who |
 |---|---|---|
 | 1 | Rotate the Nebius key in Token Factory and update `.env` locally | You |
-| 2 | Create a Hugging Face account and a Docker Space named `rehearsal` (CPU basic, Public, Blank template) | You |
-| 3 | In the Space: Settings → Variables and secrets → **New secret** `NEBIUS_API_KEY` | You |
-| 4 | Create a Hugging Face **write** token, then run `hf auth login` in your own PowerShell window | You |
-| 5 | Run `scripts/deploy_space.py <user>/rehearsal --dry-run`, then the real upload | Claude |
-| 6 | Wait for **Running**, then test the public URL using the checklist below | Claude + you |
+| 2 | On render.com: **New → Web Service**, then connect the GitHub repo `rehearsal` | You |
+| 3 | Settings: Docker, **Free** plan, env var `NEBIUS_API_KEY`, Health Check Path `/health`, then **Deploy** | You |
+| 4 | Wait for **Live**, then copy the `https://….onrender.com` URL | You |
+| 5 | Test the public URL using the checklist | Claude + you |
+| 6 | Pushing to `main` redeploys automatically | (automatic) |
 | 7 | Fill in the README demo URL and the feedback section | Claude |
 | 8 | Record the video (≤ 3:00, public on YouTube) | You |
 | 9 | Submit (see the checklist below) | You |
@@ -47,15 +47,15 @@ Last updated: Wed Oct 28, 2026, evening. **The deadline is Thu Oct 29 at night.*
 ### Submission checklist
 - [ ] Track: **Best Apps and Agents**
 - [ ] Project description: what it is, why, and how it works
-- [ ] Working demo URL (the Hugging Face Space)
+- [ ] Working demo URL (the Render `onrender.com` URL)
 - [ ] Public YouTube video, ≤ 3:00, showing Token Factory and Nemotron usage
 - [ ] Public repo with the MIT license visible, plus a README with setup steps, Nemotron and Token Factory usage, and the Nebius services used
 - [ ] Feedback on Token Factory and Nemotron
 - [ ] Builders & Brews city, if you attended one
 
 ## Gotchas
-- **Never read, print, paste or commit `.env` or the API key.** On Hugging Face, the key is a Space **secret**, not a variable.
-- Free CPU Spaces **sleep after about 48 hours with no visitors** and take roughly a minute to wake. Open the Space before judging windows, and do a final check around Dec 15.
-- The budget counter is kept in memory, so it resets if the Space restarts. To change the ceiling, add a Space **variable** `DAILY_BUDGET_USD` (e.g. `2`).
-- The `!` prefix in Claude Code can't take interactive input. Run logins (`hf auth login`, `docker login`) in your own terminal.
+- **Never read, print, paste or commit `.env` or the API key.** On Render it's an environment variable that only you set.
+- Render's free tier **sleeps after about 15 minutes without traffic**, and the first load then takes about a minute (hence the note). It allows 750 free instance-hours a month, which is enough to stay live until Dec 15.
+- The daily budget counter is kept in memory, so it resets whenever Render restarts the app, including after sleep. `RATE_GLOBAL` (600 requests/hour) bounds spend no matter what. To change limits, add `DAILY_BUDGET_USD` or `RATE_GLOBAL` as Render environment variables.
+- The `!` prefix in Claude Code can't take interactive input. Run logins in your own terminal.
 - To run locally: `.venv/Scripts/uvicorn app.main:app --port 8000`. Add `MOCK_LLM=1` to use no credits.

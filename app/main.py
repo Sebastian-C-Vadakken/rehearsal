@@ -86,6 +86,12 @@ def _bad(e: Exception):
     raise HTTPException(status_code=status, detail=message, headers={"X-Error-Code": code})
 
 
+@app.get("/health")
+async def health_check():
+    """Liveness probe for the host (Render). Makes no model calls."""
+    return {"status": "ok"}
+
+
 @app.get("/api/health")
 async def health():
     return {"ok": True, "mock": config.MOCK, "models": config.MODELS, "budget_reached": not llm.budget_left()}
