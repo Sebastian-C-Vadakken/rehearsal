@@ -141,26 +141,29 @@ scripts/           smoke test, model listing
 
 ## Feedback on Nebius Token Factory and NVIDIA Nemotron
 
-We built Rehearsal in three days on Token Factory. These notes come from that build.
+I built Rehearsal in three days on Token Factory. These are my honest notes from that build.
 
 ### What worked well
 
-- **The OpenAI-compatible API meant no new SDK.** We used the standard `openai` Python client and changed only the base URL and key. The first Nano and Ultra calls worked within minutes of getting a key.
+- **The OpenAI-compatible API meant no new SDK.** I used the standard `openai` Python client and changed only the base URL and key. The first Nano and Ultra calls worked within minutes of getting a key.
 - **The `/models` endpoint enabled zero-config setup.** The app finds the Nemotron 3 Nano, Super and Ultra IDs at startup, so nobody needs to copy model names into config files.
 - **Having three Nemotron 3 sizes made routing natural.** Nano handles the per-turn coach, Ultra the opponent and debrief, and Super is the fast backup. That's the "Ultra for reasoning, Nano/Super for everyday calls" split the track describes, and it was easy to build.
-- **Nemotron 3 Ultra was the standout.** With reasoning on, opponent replies typically took about 1–3 s. It stayed in character across long negotiations, used the tactics we gave it, and kept its offers inside the range our engine set in every test. Its debriefs quote the user's own words and pinpoint the turn where the round was lost.
+- **Nemotron 3 Ultra was the standout.** With reasoning on, opponent replies typically took about 1–3 s. It stayed in character across long negotiations, used the tactics I gave it, and kept its offers inside the range my engine set in every test. Its debriefs quote the user's own words and pinpoint the turn where the round was lost.
 - **The reasoning toggle mattered.** Passing `chat_template_kwargs: {"enable_thinking": false}` per request cut Nano's coach calls from about 2.5 s to 1.1 s and made its JSON reliable.
-- **It's cheap enough for a public demo.** A full round is roughly a couple of cents at list prices, which made a free-to-try demo with a modest daily budget realistic.
+- **It's cheap enough for a public demo.** By my estimate (token counts × list prices, not a measured bill), a full round costs a couple of cents. That made a free-to-try demo with a small daily budget realistic.
 
 ### What was rough
 
+- **Billing confused me at first.** My balance went to -$0.01 before my credits were applied, and I couldn't tell how the trial credit, promo codes and my card balance relate to each other. One clear page showing what pays for what would help a lot.
+- **Nebius AI Cloud needs a card and a $25 deposit.** That's a real barrier for students. Many of us don't have a card we can use, or can't put money down just to try something.
+- **Serverless Endpoints are billed like VMs, 24/7 while running.** My demo has to stay live for about 7 weeks of judging, and paying for a machine around the clock didn't make sense for a small demo. So I hosted the web app on Render's free tier and kept all Nemotron inference on Token Factory. With a scale-to-zero option I would have hosted it on Nebius too.
 - **Reasoning is on by default, even for tiny outputs.** Nano spent about 540 reasoning tokens to produce an 80-token JSON object. With a 600-token cap it sometimes returned empty content (`finish_reason: length`). Better docs on turning reasoning off per request, or a lower-effort default for small models, would save others the same debugging.
-- **Nano's latency was unpredictable.** It usually answered in 1–3 s, but we repeatedly saw 17–30 s responses for the same ~90-token request, both from our Render host and from a laptop, while Super answered in about 1 s every time. We added a hedged backup (Super after 3 s). Published latency figures, or a status page per model, would help.
+- **Nano's latency was unpredictable.** It usually answered in 1–3 s, but I repeatedly saw 17–30 s responses for the same ~90-token request, both from my Render host and from a laptop, while Super answered in about 1 s every time. I added a hedged backup (Super after 3 s). Published latency figures, or a status page per model, would help.
 - **Model IDs are inconsistent.** Compare `NVIDIA-Nemotron-3-Nano-30B-A3B`, `nemotron-3-super-120b-a12b` and `Nemotron-3-Ultra-550b-a55b`: mixed casing and prefixes make matching by name in code fragile.
-- **No prices through the API.** Our budget guard needs per-token prices, and we couldn't get them from `/models`, so we used published list prices. A price field on `/models` would let apps budget accurately.
-- **Structured output.** Even when told to return `null`, Nano sometimes invented a number, such as `$601` for "can you do a little better?". We added deterministic checks in Python. Documented JSON-schema enforcement (`response_format`) for the Nemotron models would make this more robust.
-- **Nebius AI Cloud tooling on Windows.** The Nebius CLI supports only Ubuntu and macOS, so on Windows we couldn't script a Serverless Endpoint deploy and hosted the web app elsewhere. Inference still runs entirely on Token Factory. A Windows build of the CLI, or a guided console-only deploy flow, would have kept the whole project on Nebius.
-- **Finding the base URL.** We found `api.tokenfactory.nebius.com/v1` faster through third-party integration guides than through the official docs. Putting it on the quickstart's first screen would help.
+- **No prices through the API.** My budget guard needs per-token prices, and I couldn't get them from `/models`, so I used published list prices. A price field on `/models` would let apps budget accurately.
+- **Structured output.** Even when told to return `null`, Nano sometimes invented a number, such as `$601` for "can you do a little better?". I added deterministic checks in Python. Documented JSON-schema enforcement (`response_format`) for the Nemotron models would make this more robust.
+- **No Nebius CLI for Windows.** It supports only Ubuntu and macOS, so on Windows I could only use the web console. A Windows build would help.
+- **Finding the base URL.** I found `api.tokenfactory.nebius.com/v1` faster through third-party integration guides than through the official docs. Putting it on the quickstart's first screen would help.
 
 ## License
 
