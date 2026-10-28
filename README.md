@@ -143,6 +143,8 @@ scripts/           smoke test, model listing
 
 I built Rehearsal in three days on Token Factory. These are my honest notes from that build.
 
+**Onboarding:** it took me about 10 minutes to go through sign-up and get an API key. After that, my first Nemotron call worked within minutes.
+
 ### What worked well
 
 - **The OpenAI-compatible API meant no new SDK.** I used the standard `openai` Python client and changed only the base URL and key. The first Nano and Ultra calls worked within minutes of getting a key.
