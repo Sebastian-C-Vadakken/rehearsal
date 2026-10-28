@@ -17,7 +17,7 @@ Last updated: Wed Oct 28, 2026, evening. **The deadline is Thu Oct 29 at night.*
 **Hosting:** a **Render free web service**, built from this repo's `Dockerfile`. The Nebius Serverless and Hugging Face plans are dropped. The app still calls Nemotron **directly through Token Factory** with our own key, and no other inference route is used. The old `docker.io/sebcv/rehearsal:v1` image is no longer needed.
 
 **Not done**
-- Rotate the Nebius API key. Part of the old one was exposed on Oct 28. Use the new key on Render.
+- ✅ Nebius API key rotated and the old key revoked (the new key is in `.env` and on Render)
 - ✅ Deployed on Render: https://rehearsal-syz0.onrender.com (tested end to end on Oct 28)
 - The README TODOs: demo URL, video link, and the feedback section
 - The video, then the submission
@@ -26,7 +26,7 @@ Last updated: Wed Oct 28, 2026, evening. **The deadline is Thu Oct 29 at night.*
 
 | Step | What | Who |
 |---|---|---|
-| 1 | Rotate the Nebius key in Token Factory and update `.env` locally | You |
+| 1 | ✅ Rotate the Nebius key (done) | You |
 | 2 | On render.com: **New → Web Service**, then connect the GitHub repo `rehearsal` | You |
 | 3 | Settings: Docker, **Free** plan, env var `NEBIUS_API_KEY`, Health Check Path `/health`, then **Deploy** | You |
 | 4 | Wait for **Live**, then copy the `https://….onrender.com` URL | You |
