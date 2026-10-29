@@ -1,5 +1,5 @@
 # Same as ../Dockerfile, but installs from pre-downloaded Linux wheels in .wheels/
-# (workaround for slow PyPI access inside Docker Desktop). See NEXT_STEPS.md.
+# (workaround for slow PyPI access inside Docker Desktop).
 FROM python:3.12-slim
 WORKDIR /srv
 COPY requirements.txt .
