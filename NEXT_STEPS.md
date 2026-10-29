@@ -1,6 +1,6 @@
 # Next steps
 
-Last updated: Wed Oct 28, 2026, evening. **The deadline is Thu Oct 29 at night.** The demo must stay live until **Dec 15**.
+Last updated: Thu Oct 29, 2026. **The deadline is Thu Oct 29 at night.** The demo must stay live until **Dec 15**.
 
 ## Where we are
 
@@ -19,7 +19,8 @@ Last updated: Wed Oct 28, 2026, evening. **The deadline is Thu Oct 29 at night.*
 **Not done**
 - ✅ Nebius API key rotated and the old key revoked (the new key is in `.env` and on Render)
 - ✅ Deployed on Render: https://rehearsal-syz0.onrender.com (tested end to end on Oct 28)
-- The README TODOs: demo URL, video link, and the feedback section
+- ✅ README demo URL and feedback section
+- The README video link (the last TODO)
 - The video, then the submission
 
 ## Plan
@@ -32,7 +33,8 @@ Last updated: Wed Oct 28, 2026, evening. **The deadline is Thu Oct 29 at night.*
 | 4 | Wait for **Live**, then copy the `https://….onrender.com` URL | You |
 | 5 | Test the public URL using the checklist | Claude + you |
 | 6 | Pushing to `main` redeploys automatically | (automatic) |
-| 7 | Fill in the README demo URL and the feedback section | Claude |
+| 7 | ✅ Fill in the README demo URL and the feedback section (done) | Claude |
+| 7b | Paste the YouTube link into the README `Video:` TODO | Claude, once you have the link |
 | 8 | Record the video (≤ 3:00, public on YouTube) | You |
 | 9 | Submit (see the checklist below) | You |
 
@@ -52,6 +54,20 @@ Last updated: Wed Oct 28, 2026, evening. **The deadline is Thu Oct 29 at night.*
 - [ ] Public repo with the MIT license visible, plus a README with setup steps, Nemotron and Token Factory usage, and the Nebius services used
 - [ ] Feedback on Token Factory and Nemotron
 - [ ] Builders & Brews city, if you attended one
+
+## Project description (ready to paste)
+
+**Rehearsal: lose the negotiation here, not in real life.**
+
+**What it is.** Rehearsal lets you practise high-stakes conversations, such as a salary offer, a deposit dispute, a financial-aid appeal or a scam phone call, against an AI opponent that holds a hidden hand. A live coach scores every move as you make it. When the round ends, the cards flip: you see the other side's real limit, how much money you left on the table, and a turn-by-turn debrief. Then you can replay from the exact turn where you slipped. You can also paste your own real situation, and Nemotron Ultra builds a hidden hand for it.
+
+**Why.** Most people don't lose money in negotiations because they argue badly. They lose it because they never practise and can't see what the other side is holding back. New grads accept the first offer, tenants let landlords keep deposits for normal wear and tear, first-generation students never appeal an aid award, and older adults fall for "grandparent" scams. Rehearsal gives each of them a safe opponent to lose to first.
+
+**How it works.** Every turn uses three NVIDIA Nemotron 3 models on Nebius Token Factory, each picked for its job. Nemotron Nano, with Super as a hedged backup after 3 s, reads your message as structured JSON: did you anchor, justify, or hedge? A deterministic Python deal engine turns that read into leverage and decides what the opponent may offer this turn. Nemotron Ultra then plays the opponent in character, within that range. The walk-away number exists only in Python, so Ultra never sees it, and no prompt injection can leak it. At the end, Python computes the reveal and Ultra writes the debrief. A live router panel shows every call's model, latency, tokens and cost. The public demo has a budget guard: a daily spend ceiling, rate limits and turn caps.
+
+**Built with:** NVIDIA Nemotron 3 Nano, Super and Ultra · Nebius Token Factory (OpenAI-compatible API) · FastAPI · vanilla JS · hosted on Render.
+
+**Links:** demo https://rehearsal-syz0.onrender.com (click "Judge demo: salary offer") · code https://github.com/Sebastian-C-Vadakken/rehearsal
 
 ## Gotchas
 - **Never read, print, paste or commit `.env` or the API key.** On Render it's an environment variable that only you set.
